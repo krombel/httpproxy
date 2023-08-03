@@ -275,7 +275,9 @@ func (ctx *Context) doConnect(w http.ResponseWriter, r *http.Request) (b bool) {
 		hijConn.Close()
 		remoteConn.Close()
 	case ConnectMitm:
-		tlsConfig := &tls.Config{}
+		tlsConfig := &tls.Config{
+			ECHEnabled: true,
+		}
 		cert := ctx.Prx.signer.SignHost(host)
 		if cert == nil {
 			hijConn.Close()
