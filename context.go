@@ -65,8 +65,7 @@ func (ctx *Context) onAuth(authType string, user string, pass string) bool {
 	return ctx.Prx.OnAuth(ctx, authType, user, pass)
 }
 
-func (ctx *Context) onConnect(host string) (ConnectAction ConnectAction,
-	newHost string) {
+func (ctx *Context) onConnect(host string) (ConnectAction ConnectAction, newHost string) {
 	defer func() {
 		if err, ok := recover().(error); ok {
 			ctx.doError("Connect", ErrPanic, err)
@@ -93,7 +92,7 @@ func (ctx *Context) onResponse(req *http.Request, resp *http.Response) {
 	ctx.Prx.OnResponse(ctx, req, resp)
 }
 
-func (ctx *Context) doError(where string, err *Error, opErr error) {
+func (ctx *Context) doError(where string, err, opErr error) {
 	if ctx.Prx.OnError == nil {
 		return
 	}

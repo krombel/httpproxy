@@ -12,7 +12,6 @@ curl --proxy-insecure -x "https://test:1234@localhost:8443" http://httpbin.org/g
 
 Connect through HTTPS proxy to HTTPS with MITM:
 curl --proxy-insecure --insecure -x "https://test:1234@localhost:8443" https://httpbin.org/get?a=b
-
 */
 package main
 
@@ -32,14 +31,12 @@ import (
 
 var logErr = log.New(os.Stderr, "ERR: ", log.LstdFlags)
 
-func OnError(ctx *httpproxy.Context, where string,
-	err *httpproxy.Error, opErr error) {
+func OnError(ctx *httpproxy.Context, where string, err, opErr error) {
 	// Log errors.
 	logErr.Printf("%s: %s [%s]", where, err, opErr)
 }
 
-func OnAccept(ctx *httpproxy.Context, w http.ResponseWriter,
-	r *http.Request) bool {
+func OnAccept(ctx *httpproxy.Context, w http.ResponseWriter, r *http.Request) bool {
 	// Handle local request has path "/info"
 	if r.Method == "GET" && !r.URL.IsAbs() && r.URL.Path == "/info" {
 		w.Write([]byte("This is go-httpproxy."))
@@ -56,21 +53,18 @@ func OnAuth(ctx *httpproxy.Context, authType string, user string, pass string) b
 	return false
 }
 
-func OnConnect(ctx *httpproxy.Context, host string) (
-	ConnectAction httpproxy.ConnectAction, newHost string) {
+func OnConnect(ctx *httpproxy.Context, host string) (ConnectAction httpproxy.ConnectAction, newHost string) {
 	// Apply "Man in the Middle" to all ssl connections. Never change host.
 	return httpproxy.ConnectMitm, host
 }
 
-func OnRequest(ctx *httpproxy.Context, req *http.Request) (
-	resp *http.Response) {
+func OnRequest(ctx *httpproxy.Context, req *http.Request) (resp *http.Response) {
 	// Log proxying requests.
 	log.Printf("INFO: Proxy %d %d: %s %s", ctx.SessionNo, ctx.SubSessionNo, req.Method, req.URL.String())
 	return
 }
 
-func OnResponse(ctx *httpproxy.Context, req *http.Request,
-	resp *http.Response) {
+func OnResponse(ctx *httpproxy.Context, req *http.Request, resp *http.Response) {
 	// Add header "Via: go-httpproxy".
 	resp.Header.Add("Via", "go-httpproxy")
 }
@@ -92,7 +86,7 @@ func main() {
 	prx.OnConnect = OnConnect
 	prx.OnRequest = OnRequest
 	prx.OnResponse = OnResponse
-	//prx.MitmChunked = false
+	// prx.MitmChunked = false
 
 	server := &http.Server{
 		Addr:         ":8080",

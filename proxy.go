@@ -24,7 +24,7 @@ type Proxy struct {
 	UserData interface{}
 
 	// Error callback.
-	OnError func(ctx *Context, where string, err *Error, opErr error)
+	OnError func(ctx *Context, where string, err, opErr error)
 
 	// Accept callback. It greets proxy request like ServeHTTP function of
 	// http.Handler.
@@ -67,8 +67,10 @@ func NewProxy() (*Proxy, error) {
 // NewProxyCert returns a new Proxy given CA certificate and key.
 func NewProxyCert(caCert, caKey []byte) (*Proxy, error) {
 	prx := &Proxy{
-		Rt: &http.Transport{TLSClientConfig: &tls.Config{},
-			Proxy: http.ProxyFromEnvironment},
+		Rt: &http.Transport{
+			TLSClientConfig: &tls.Config{},
+			Proxy:           http.ProxyFromEnvironment,
+		},
 		MitmChunked: true,
 		signer:      NewCaSignerCache(1024),
 	}
@@ -117,9 +119,9 @@ func (prx *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for {
-		var w2 = w
-		var r2 = r
-		var cyclic = false
+		w2 := w
+		r2 := r
+		cyclic := false
 		switch ctx.ConnectAction {
 		case ConnectMitm:
 			if prx.MitmChunked {
@@ -130,8 +132,8 @@ func (prx *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if w2 == nil || r2 == nil {
 			break
 		}
-		//r.Header.Del("Accept-Encoding")
-		//r.Header.Del("Connection")
+		// r.Header.Del("Accept-Encoding")
+		// r.Header.Del("Connection")
 		ctx.SubSessionNo++
 		if b, err := ctx.doRequest(w2, r2); err != nil {
 			break

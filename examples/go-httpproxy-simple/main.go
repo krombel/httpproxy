@@ -7,14 +7,12 @@ import (
 	"github.com/go-httpproxy/httpproxy"
 )
 
-func OnError(ctx *httpproxy.Context, where string,
-	err *httpproxy.Error, opErr error) {
+func OnError(ctx *httpproxy.Context, where string, err, opErr error) {
 	// Log errors.
 	log.Printf("ERR: %s: %s [%s]", where, err, opErr)
 }
 
-func OnAccept(ctx *httpproxy.Context, w http.ResponseWriter,
-	r *http.Request) bool {
+func OnAccept(ctx *httpproxy.Context, w http.ResponseWriter, r *http.Request) bool {
 	// Handle local request has path "/info"
 	if r.Method == "GET" && !r.URL.IsAbs() && r.URL.Path == "/info" {
 		w.Write([]byte("This is go-httpproxy."))
@@ -31,21 +29,18 @@ func OnAuth(ctx *httpproxy.Context, authType string, user string, pass string) b
 	return false
 }
 
-func OnConnect(ctx *httpproxy.Context, host string) (
-	ConnectAction httpproxy.ConnectAction, newHost string) {
+func OnConnect(ctx *httpproxy.Context, host string) (ConnectAction httpproxy.ConnectAction, newHost string) {
 	// Apply "Man in the Middle" to all ssl connections. Never change host.
 	return httpproxy.ConnectMitm, host
 }
 
-func OnRequest(ctx *httpproxy.Context, req *http.Request) (
-	resp *http.Response) {
+func OnRequest(ctx *httpproxy.Context, req *http.Request) (resp *http.Response) {
 	// Log proxying requests.
 	log.Printf("INFO: Proxy: %s %s", req.Method, req.URL.String())
 	return
 }
 
-func OnResponse(ctx *httpproxy.Context, req *http.Request,
-	resp *http.Response) {
+func OnResponse(ctx *httpproxy.Context, req *http.Request, resp *http.Response) {
 	// Add header "Via: go-httpproxy".
 	resp.Header.Add("Via", "go-httpproxy")
 }
